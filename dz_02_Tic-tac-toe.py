@@ -1,8 +1,14 @@
 """Вы когда-нибудь играли в игру "Крестики-нолики"? Попробуйте создать её, причем чтобы сыграть в нее можно было в
 одиночку. """
-from random import randint
+from random import randint, choice
+
+"Выбираем уровень сложности"
+smart_level = 2  # Всего 3 уровня сложности: 0, 1, 2
 
 table = [[None for i in range(3)] for j in range(3)]
+empty_cells = ['11', '12', '13', '21', '22', '23', '31', '32', '33']
+user_symb = 1  # у игрока крестики
+comp_symb = 0  # у компьютера нолики
 
 
 def print_table():
@@ -15,20 +21,33 @@ def print_table():
         if r < 2:
             print('---+---+---')
 
+def comp_thinking():
+    check_symb_list = [comp_symb, user_symb]
+    if smart_level:
+        for check_symb in check_symb_list[-smart_level:]:
+            for cell in empty_cells:
+                x, y = map(int, cell)
+                table[x - 1][y - 1] = check_symb
+                if check_table() == check_symb:
+                    table[x - 1][y - 1] = None
+                    return cell
+                table[x - 1][y - 1] = None
+    return choice(empty_cells)
 
 def step(is_player, symb):
-    cell = 1
-    while cell is not None:
-        if is_player:
-            command = input("Ваш ход (строка столбец без пробела): ")
-            if command == '':
+    if is_player:
+        coord_xy = '-'
+        while coord_xy not in empty_cells:
+            print('Возможные ходы', empty_cells)
+            print('Для завершения нажмите Enter')
+            coord_xy = input("Ваш ход (строка столбец без пробела): ")
+            if coord_xy == '':
                 exit()
-            x, y = map(int, command)
-        else:
-            x, y = randint(1, 3), randint(1, 3)
-        cell = table[x - 1][y - 1]
-        if cell is None:
-            table[x - 1][y - 1] = symb
+    else:
+        coord_xy = comp_thinking()
+    empty_cells.remove(coord_xy)
+    x, y = map(int, coord_xy)
+    table[x - 1][y - 1] = symb
     if not is_player:
         print(f'Ход компьютера ({x}, {y})')
 
@@ -59,8 +78,6 @@ def check_table():
 
 
 def play_game():
-    user_symb = 1  # у игрока крестики
-    comp_symb = 0  # у компьютера нолики
     check = None
     turn_X = True  # показывает чей ход
     # Основной цикл игры
